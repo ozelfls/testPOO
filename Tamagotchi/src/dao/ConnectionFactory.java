@@ -11,7 +11,7 @@ import java.sql.Statement;
 
 public class ConnectionFactory {
 
-    private static final String DB_DIR  = "database";
+    private static final String DB_DIR  = "Tamagotchi/database";
     private static final String DB_PATH = DB_DIR + "/tamagotchi.db";
     private static final String URL     = "jdbc:sqlite:" + DB_PATH;
 
