@@ -8,6 +8,10 @@ public class Pet {
     private int hunger;
     private int happiness;
     private int energy;
+    private long lastNeedsUpdateEpoch;
+    private int healthyMinutes;
+    private int careCount;
+    private int neglectMinutes;
     private byte[] imageData;
 
     public int getId() {
@@ -56,6 +60,38 @@ public class Pet {
 
     public void setEnergy(int energy) {
         this.energy = energy;
+    }
+
+    public long getLastNeedsUpdateEpoch() {
+        return lastNeedsUpdateEpoch;
+    }
+
+    public void setLastNeedsUpdateEpoch(long lastNeedsUpdateEpoch) {
+        this.lastNeedsUpdateEpoch = lastNeedsUpdateEpoch;
+    }
+
+    public int getHealthyMinutes() {
+        return healthyMinutes;
+    }
+
+    public void setHealthyMinutes(int healthyMinutes) {
+        this.healthyMinutes = healthyMinutes;
+    }
+
+    public int getCareCount() {
+        return careCount;
+    }
+
+    public void setCareCount(int careCount) {
+        this.careCount = careCount;
+    }
+
+    public int getNeglectMinutes() {
+        return neglectMinutes;
+    }
+
+    public void setNeglectMinutes(int neglectMinutes) {
+        this.neglectMinutes = neglectMinutes;
     }
 
     public byte[] getImageData() {

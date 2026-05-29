@@ -59,6 +59,7 @@ public class ConnectionFactory {
                     runSchema(conn);
                 }
                 migratePetImageStorage(conn);
+                migrateNeedsSystem(conn);
             }
 
             initialized = true;
@@ -157,6 +158,41 @@ public class ConnectionFactory {
 
         if (hasImagePath) {
             migrateImagePathToBlob(conn);
+        }
+    }
+
+    private static void migrateNeedsSystem(Connection conn) throws SQLException {
+        if (!hasTable(conn, "pet")) {
+            return;
+        }
+
+        try (Statement st = conn.createStatement()) {
+            if (!hasColumn(conn, "pet", "last_needs_update_epoch")) {
+                st.executeUpdate("ALTER TABLE pet ADD COLUMN last_needs_update_epoch INTEGER NOT NULL DEFAULT 0");
+                st.executeUpdate("UPDATE pet SET last_needs_update_epoch = CAST(strftime('%s','now') AS INTEGER) "
+                        + "WHERE last_needs_update_epoch = 0");
+            }
+            if (!hasColumn(conn, "pet", "healthy_minutes")) {
+                st.executeUpdate("ALTER TABLE pet ADD COLUMN healthy_minutes INTEGER NOT NULL DEFAULT 0");
+            }
+            if (!hasColumn(conn, "pet", "care_count")) {
+                st.executeUpdate("ALTER TABLE pet ADD COLUMN care_count INTEGER NOT NULL DEFAULT 0");
+            }
+            if (!hasColumn(conn, "pet", "neglect_minutes")) {
+                st.executeUpdate("ALTER TABLE pet ADD COLUMN neglect_minutes INTEGER NOT NULL DEFAULT 0");
+            }
+            st.executeUpdate("CREATE TABLE IF NOT EXISTS pet_care_history ("
+                    + "id INTEGER PRIMARY KEY AUTOINCREMENT, "
+                    + "pet_id INTEGER NOT NULL, "
+                    + "event_type TEXT NOT NULL, "
+                    + "event_epoch INTEGER NOT NULL, "
+                    + "hunger INTEGER NOT NULL CHECK (hunger BETWEEN 0 AND 100), "
+                    + "happiness INTEGER NOT NULL CHECK (happiness BETWEEN 0 AND 100), "
+                    + "energy INTEGER NOT NULL CHECK (energy BETWEEN 0 AND 100), "
+                    + "average INTEGER NOT NULL CHECK (average BETWEEN 0 AND 100), "
+                    + "note TEXT, "
+                    + "FOREIGN KEY (pet_id) REFERENCES pet(id) ON DELETE CASCADE"
+                    + ")");
         }
     }
 

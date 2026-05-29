@@ -24,7 +24,24 @@ CREATE TABLE IF NOT EXISTS pet (
     hunger        INTEGER NOT NULL CHECK (hunger BETWEEN 0 AND 100),
     happiness     INTEGER NOT NULL CHECK (happiness BETWEEN 0 AND 100),
     energy        INTEGER NOT NULL CHECK (energy BETWEEN 0 AND 100),
+    last_needs_update_epoch INTEGER NOT NULL DEFAULT (CAST(strftime('%s','now') AS INTEGER)),
+    healthy_minutes INTEGER NOT NULL DEFAULT 0,
+    care_count    INTEGER NOT NULL DEFAULT 0,
+    neglect_minutes INTEGER NOT NULL DEFAULT 0,
     image_data    BLOB
+);
+
+CREATE TABLE IF NOT EXISTS pet_care_history (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    pet_id      INTEGER NOT NULL,
+    event_type  TEXT NOT NULL,
+    event_epoch INTEGER NOT NULL,
+    hunger      INTEGER NOT NULL CHECK (hunger BETWEEN 0 AND 100),
+    happiness   INTEGER NOT NULL CHECK (happiness BETWEEN 0 AND 100),
+    energy      INTEGER NOT NULL CHECK (energy BETWEEN 0 AND 100),
+    average     INTEGER NOT NULL CHECK (average BETWEEN 0 AND 100),
+    note        TEXT,
+    FOREIGN KEY (pet_id) REFERENCES pet(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS app_setting (
@@ -75,7 +92,7 @@ WHERE origem.nome = 'Baby' AND destino.nome = 'Demon'
   );
 
 INSERT INTO pet (nome, tipo_usuario, hunger, happiness, energy, image_data)
-SELECT 'Tama', 'Ovo', 50, 50, 50, NULL
+SELECT 'Tama', 'Ovo', 100, 100, 100, NULL
 WHERE NOT EXISTS (SELECT 1 FROM pet);
 
 INSERT INTO app_setting (chave, valor)

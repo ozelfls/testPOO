@@ -132,10 +132,10 @@ public class PetCrudDialog extends JDialog {
             BorderFactory.createEmptyBorder(12, 16, 14, 16)
         ));
 
-        JButton btnNovo    = Theme.makeButton("+ NOVO",       Theme.NEON_PURPLE);
-        JButton btnEditar  = Theme.makeButton("* EDITAR",     Theme.YELLOW);
-        JButton btnExcluir = Theme.makeButton("X EXCLUIR",    Theme.HUNGER_CLR);
-        JButton btnUsar    = Theme.makeButton("\uD83D\uDC3E USAR ESTE PET", Theme.MAGENTA);
+        JButton btnNovo    = Theme.makeButton("NOVO",       Theme.NEON_PURPLE, Theme.ButtonGlyph.ADD);
+        JButton btnEditar  = Theme.makeButton("EDITAR",     Theme.YELLOW, Theme.ButtonGlyph.EDIT);
+        JButton btnExcluir = Theme.makeButton("EXCLUIR",    Theme.HUNGER_CLR, Theme.ButtonGlyph.DELETE);
+        JButton btnUsar    = Theme.makePremiumButton("USAR ESTE PET  >", Theme.MAGENTA, Theme.ButtonGlyph.PAW);
 
         btnNovo.addActionListener(e    -> novoPet());
         btnEditar.addActionListener(e  -> editarPet());
@@ -341,9 +341,9 @@ public class PetCrudDialog extends JDialog {
 
             txtNome     = new JTextField();
             txtTipo     = new JTextField();
-            spHunger    = new JSpinner(new SpinnerNumberModel(50, 0, 100, 1));
-            spHappiness = new JSpinner(new SpinnerNumberModel(50, 0, 100, 1));
-            spEnergy    = new JSpinner(new SpinnerNumberModel(50, 0, 100, 1));
+            spHunger    = new JSpinner(new SpinnerNumberModel(100, 0, 100, 1));
+            spHappiness = new JSpinner(new SpinnerNumberModel(100, 0, 100, 1));
+            spEnergy    = new JSpinner(new SpinnerNumberModel(100, 0, 100, 1));
 
             Theme.styleTextField(txtNome);
             Theme.styleTextField(txtTipo);
@@ -360,7 +360,7 @@ public class PetCrudDialog extends JDialog {
                 Theme.pixelBorder(Theme.NEON_PURPLE, Theme.PURPLE, 1),
                 BorderFactory.createEmptyBorder(5, 8, 5, 8)));
 
-            JButton btnChooseImage = Theme.makeButton("+ IMAGEM", Theme.NEON_PURPLE);
+            JButton btnChooseImage = Theme.makeButton("IMAGEM", Theme.NEON_PURPLE, Theme.ButtonGlyph.ADD);
             btnChooseImage.addActionListener(e -> chooseImage());
 
             form.add(makeFormLabel("Nome:"));        form.add(txtNome);
@@ -410,8 +410,8 @@ public class PetCrudDialog extends JDialog {
                 BorderFactory.createEmptyBorder(12, 16, 14, 16)
             ));
 
-            JButton btnSalvar   = Theme.makeButton("SALVAR",   Theme.ENERGY_CLR);
-            JButton btnCancelar = Theme.makeButton("CANCELAR", Theme.HUNGER_CLR);
+            JButton btnSalvar   = Theme.makeButton("SALVAR",   Theme.ENERGY_CLR, Theme.ButtonGlyph.SAVE);
+            JButton btnCancelar = Theme.makeButton("CANCELAR", Theme.HUNGER_CLR, Theme.ButtonGlyph.CANCEL);
 
             btnSalvar.addActionListener(e   -> save());
             btnCancelar.addActionListener(e -> dispose());
