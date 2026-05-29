@@ -1,120 +1,238 @@
-## Tamagotchi MVC (Java + SQLite + Swing)
+# Tamagotchi MVC
 
-Implementação de um **Tamagotchi de verdade** (bichinho virtual), seguindo **MVC**, com:
+Aplicacao Java desktop de Tamagotchi, feita com Swing, SQLite, JDBC e organizacao em MVC.
 
-- Status persistido em **SQLite**.
-- Interface gráfica em **Swing**.
-- CRUD completo de pets (nome, tipo, atributos, imagem).
-- Botão para escolher qual pet é o “ativo” na tela principal.
+## Specs
 
-### Tecnologias
+- Linguagem: Java
+- Interface: Swing
+- Banco: SQLite local
+- Driver: `lib/sqlite-jdbc.jar`
+- Arquitetura: MVC
+- Classe principal da GUI: `view.MainFrame`
+- Classe principal do console: `view.GameView`
+- JDK recomendado: 17 ou superior
 
-- Java SE (JDK 17)
-- JDBC
-- SQLite (banco local em arquivo)
-- Swing (GUI)
-
-### Estrutura de pastas
+## Estrutura
 
 ```text
 Tamagotchi/
-├── database/
-│   ├── tamagotchi.db           # Banco SQLite gerado em runtime
-│   └── schema.sql              # Script para criar tabelas e seed
-├── src/
-│   ├── model/
-│   │   └── Pet.java            # Modelo do bichinho (status + tipoUsuario + imagem)
-│   ├── dao/
-│   │   ├── ConnectionFactory.java
-│   │   └── PetDAO.java
-│   ├── controller/
-│   │   └── GameController.java
-│   └── view/
-│       ├── MainFrame.java      # GUI principal (Swing)
-│       ├── PetCrudDialog.java  # CRUD de pets (Swing)
-│       └── GameView.java       # Versão console opcional
-└── lib/
-    └── sqlite-jdbc.jar         # Driver JDBC do SQLite (adicione aqui)
+|-- database/
+|   |-- schema.sql
+|   `-- tamagotchi.db
+|-- lib/
+|   `-- sqlite-jdbc.jar
+|-- out/
+`-- src/
+    |-- controller/
+    |-- dao/
+    |-- model/
+    `-- view/
 ```
 
-### Modelo de dados (SQLite)
+## Banco De Dados
 
-#### Tabela `pet`
+O banco padrao fica em:
 
-Guarda todos os Tamagotchis cadastrados.
+```text
+database/tamagotchi.db
+```
 
-| coluna       | tipo    | descrição                         |
-|-------------|---------|-----------------------------------|
-| id          | INTEGER | PK autoincrement                  |
-| nome        | TEXT    | nome do pet                       |
-| tipo_usuario| TEXT    | tipo definido pelo usuário        |
-| hunger      | INTEGER | fome (0–100)                      |
-| happiness   | INTEGER | felicidade (0–100)                |
-| energy      | INTEGER | energia (0–100)                   |
-| image_path  | TEXT    | caminho da imagem no disco        |
+Tabelas principais:
 
-O arquivo `database/schema.sql`:
+- `pet`: guarda os pets, status e imagem.
+- `pet.image_data`: coluna `BLOB`; a imagem e salva no banco em bytes, nao como caminho.
+- `app_setting`: guarda configuracoes simples.
+- `app_setting.active_pet_id`: id do pet ativo.
+- `creature_type`: tipos base de criatura.
+- `evolution`: regras de evolucao.
 
-- Cria a tabela `pet` com as colunas acima.
-- Insere um pet inicial:
-  - `Tama` com tipo `"Ovo"` e atributos 50/50/50.
+O backend tambem aceita um diretorio customizado para o banco:
 
-### Comportamento do app
+- Variavel de ambiente: `TAMAGOTCHI_DATABASE_DIR`
+- Propriedade JVM: `-Dtamagotchi.database.dir=...`
 
-- **MainFrame (GUI principal)**:
-  - Mostra o pet ativo:
-    - Nome.
-    - Tipo (texto livre, vindo de `tipo_usuario`).
-    - Barras de Fome, Felicidade, Energia.
-    - Imagem (se `image_path` estiver preenchido e o arquivo existir).
-  - Botões de ação:
-    - `Alimentar`, `Brincar`, `Dormir`, `Exercitar`.
-    - Cada ação altera os atributos (sempre entre 0 e 100) e salva no banco via `GameController` + `PetDAO`.
-  - Botão **“Gerenciar Pets…”**:
-    - Abre o `PetCrudDialog` (CRUD completo).
+## Rodar No Windows PowerShell
 
-- **PetCrudDialog (CRUD)**:
-  - Lista todos os pets em uma tabela: **ID, Nome, Tipo**.
-  - Botões:
-    - `Novo`: abre formulário para cadastrar pet (nome, tipo, atributos iniciais, imagem).
-    - `Editar`: carrega o pet selecionado no formulário.
-    - `Excluir`: remove o pet selecionado do banco.
-    - `Usar este Pet`: define o pet selecionado como **pet ativo** no `MainFrame` (via `GameController.carregarPetPorId`).
-  - Formulário de pet (`PetFormDialog`):
-    - Campos:
-      - Nome (`JTextField`).
-      - Tipo (texto livre, `JTextField` → gravado em `tipo_usuario`).
-      - Fome / Felicidade / Energia (`JSpinner` 0–100).
-      - Imagem (`JTextField` + `JFileChooser` para escolher arquivo).
-
-### Driver SQLite
-
-1. Baixe o driver JDBC (ex.: `sqlite-jdbc-x.x.x.jar`).
-2. Coloque em `lib/sqlite-jdbc.jar` (ou ajuste o nome no classpath).
-3. Inclua esse `.jar` no classpath ao compilar/executar.
-
-### Compilar e executar (terminal, Windows)
-
-Na pasta `Tamagotchi`:
+Entre na pasta do projeto:
 
 ```powershell
-# (Opcional) limpar banco se mudou schema: SE FOR MUDAR ALGO NO SCHEMA BASE TEM Q RODAR ESSE COMANDO 
-del .\database\tamagotchi.db
-
-# Compilar
-javac -cp "lib\sqlite-jdbc.jar" -d out -sourcepath src `
-  src\model\*.java src\dao\*.java src\controller\*.java src\view\*.java
-
-# Executar GUI (ajuste o caminho do JDK 17 se preciso)
-& "C:\Users*************\" view.MainFrame
+cd "C:\Users\Usuario\Desktop\java implements\testPOO\Tamagotchi"
 ```
 
-### Resumo de uso
+Verifique os requisitos:
 
-- Use **MainFrame** para:
-  - Ver o status do pet ativo.
-  - Alimentar, brincar, fazer dormir, exercitar.
-- Use **Gerenciar Pets…** para:
-  - Criar quantos Tamagotchis quiser (cada um com tipo e imagem diferentes).
-  - Escolher qual Tamagotchi será o **ativo** (botão “Usar este Pet”).
+```powershell
+java -version
+javac -version
+Test-Path .\lib\sqlite-jdbc.jar
+Test-Path .\database\schema.sql
+```
 
+Os dois comandos `Test-Path` devem retornar `True`.
+
+Compile:
+
+```powershell
+javac -cp ".\lib\sqlite-jdbc.jar" -d out -sourcepath src src\model\*.java src\dao\*.java src\controller\*.java src\view\*.java
+```
+
+Execute a interface grafica:
+
+```powershell
+java -cp ".\lib\sqlite-jdbc.jar;out" view.MainFrame
+```
+
+Execute a versao console:
+
+```powershell
+java -cp ".\lib\sqlite-jdbc.jar;out" view.GameView
+```
+
+## Rodar No Windows Com JDK Especifico
+
+Use este formato se `java` do PATH for antigo:
+
+```powershell
+$JDK = "C:\Program Files\Android\openjdk\jdk-21.0.8"
+cd "C:\Users\Usuario\Desktop\java implements\testPOO\Tamagotchi"
+& "$JDK\bin\javac.exe" -cp ".\lib\sqlite-jdbc.jar" -d out -sourcepath src src\model\*.java src\dao\*.java src\controller\*.java src\view\*.java
+& "$JDK\bin\java.exe" -cp ".\lib\sqlite-jdbc.jar;out" view.MainFrame
+```
+
+## Rodar No Linux Ou macOS
+
+Entre na pasta do projeto:
+
+```bash
+cd "/caminho/para/testPOO/Tamagotchi"
+```
+
+Verifique os requisitos:
+
+```bash
+java -version
+javac -version
+test -f ./lib/sqlite-jdbc.jar
+test -f ./database/schema.sql
+```
+
+Compile:
+
+```bash
+javac -cp "./lib/sqlite-jdbc.jar" -d out -sourcepath src src/model/*.java src/dao/*.java src/controller/*.java src/view/*.java
+```
+
+Execute a interface grafica:
+
+```bash
+java -cp "./lib/sqlite-jdbc.jar:out" view.MainFrame
+```
+
+Execute a versao console:
+
+```bash
+java -cp "./lib/sqlite-jdbc.jar:out" view.GameView
+```
+
+## Banco Em Diretorio Customizado
+
+Windows PowerShell:
+
+```powershell
+$env:TAMAGOTCHI_DATABASE_DIR = "C:\dados\tamagotchi"
+java -cp ".\lib\sqlite-jdbc.jar;out" view.MainFrame
+```
+
+Ou:
+
+```powershell
+java -Dtamagotchi.database.dir="C:\dados\tamagotchi" -cp ".\lib\sqlite-jdbc.jar;out" view.MainFrame
+```
+
+Linux/macOS:
+
+```bash
+TAMAGOTCHI_DATABASE_DIR="/tmp/tamagotchi-db" java -cp "./lib/sqlite-jdbc.jar:out" view.MainFrame
+```
+
+Ou:
+
+```bash
+java -Dtamagotchi.database.dir="/tmp/tamagotchi-db" -cp "./lib/sqlite-jdbc.jar:out" view.MainFrame
+```
+
+## Uso Basico
+
+Na tela principal:
+
+- `ALIMENTAR`: reduz fome, aumenta felicidade e reduz energia.
+- `BRINCAR`: aumenta felicidade, aumenta fome e reduz energia.
+- `DORMIR`: recupera energia.
+- `EXERCITAR`: aumenta fome, aumenta felicidade e reduz energia.
+- `GERENCIAR PETS`: abre o CRUD de pets.
+
+No CRUD:
+
+- `NOVO`: cria um pet.
+- `EDITAR`: altera o pet selecionado.
+- `EXCLUIR`: remove o pet selecionado.
+- `USAR ESTE`: define o pet selecionado como ativo.
+
+## Troubleshooting
+
+### Erro: class file version 61.0
+
+O projeto foi compilado com Java 17 ou superior, mas esta sendo executado com Java 8.
+
+Use um JDK 17+ para compilar e executar:
+
+```powershell
+java -version
+javac -version
+```
+
+### Erro: Driver SQLite nao encontrado
+
+Confirme se o driver existe:
+
+```powershell
+Test-Path .\lib\sqlite-jdbc.jar
+```
+
+No Linux/macOS:
+
+```bash
+test -f ./lib/sqlite-jdbc.jar
+```
+
+### Erro Ao Carregar Banco SQLite
+
+Confirme se existe:
+
+```text
+database/schema.sql
+database/tamagotchi.db
+```
+
+Se quiser recriar o banco local:
+
+```powershell
+Remove-Item .\database\tamagotchi.db -ErrorAction SilentlyContinue
+java -cp ".\lib\sqlite-jdbc.jar;out" view.GameView
+```
+
+No Linux/macOS:
+
+```bash
+rm -f ./database/tamagotchi.db
+java -cp "./lib/sqlite-jdbc.jar:out" view.GameView
+```
+
+## Observacoes Para Futuro EXE
+
+- Empacotar com Java 17+.
+- Incluir `sqlite-jdbc.jar`.
+- Manter um diretorio gravavel para o SQLite.
+- Preferir `TAMAGOTCHI_DATABASE_DIR` ou `-Dtamagotchi.database.dir` no atalho/launcher.
+- Nao depender do Java 8 instalado na maquina.

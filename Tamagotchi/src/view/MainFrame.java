@@ -20,10 +20,10 @@ public class MainFrame extends JFrame {
     private JProgressBar barHunger;
     private JProgressBar barHappiness;
     private JProgressBar barEnergy;
-    private JLabel lblImage;
+    private PetImagePanel petImagePanel;
 
     public MainFrame() {
-        super("Tamagotchi");
+        super("Tamagotchi Cyber");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setResizable(true);
         getContentPane().setBackground(Theme.BG_MAIN);
@@ -31,47 +31,69 @@ public class MainFrame extends JFrame {
         buildUi();
         loadPet();
         pack();
-        setMinimumSize(new Dimension(540, 640));
+        setMinimumSize(new Dimension(560, 720));
         setLocationRelativeTo(null);
     }
 
-    // -------------------------------------------------------------------------
-    // UI construction
-    // -------------------------------------------------------------------------
-
     private void buildUi() {
-        add(buildHeader(),  BorderLayout.NORTH);
-        add(buildCenter(),  BorderLayout.CENTER);
-        add(buildActions(), BorderLayout.SOUTH);
-    }
-
-    private JPanel buildHeader() {
-        JPanel header = new JPanel(new GridLayout(2, 1, 0, 6)) {
-            @Override
-            protected void paintComponent(Graphics g) {
+        JPanel shell = new JPanel(new BorderLayout(0, 14)) {
+            @Override protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
                 Graphics2D g2 = (Graphics2D) g.create();
-                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                GradientPaint gp = new GradientPaint(
-                    0, 0,           new Color(58, 38, 108),
-                    0, getHeight(), new Color(18, 12, 42)
-                );
-                g2.setPaint(gp);
-                g2.fillRect(0, 0, getWidth(), getHeight());
+                g2.setColor(Theme.withAlpha(Theme.NEON_PURPLE, 26));
+                for (int y = 18; y < getHeight(); y += 18) {
+                    g2.drawLine(16, y, getWidth() - 16, y);
+                }
+                g2.setColor(Theme.withAlpha(Theme.MAGENTA, 30));
+                g2.drawRect(10, 10, getWidth() - 21, getHeight() - 21);
                 g2.dispose();
             }
         };
-        header.setOpaque(true);
-        header.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createMatteBorder(0, 0, 2, 0, Theme.ACCENT),
-            BorderFactory.createEmptyBorder(18, 24, 18, 24)
+        shell.setBackground(Theme.BG_MAIN);
+        shell.setBorder(BorderFactory.createCompoundBorder(
+            Theme.pixelBorder(Theme.NEON_PURPLE, Theme.PURPLE, 3),
+            BorderFactory.createEmptyBorder(16, 18, 16, 18)
         ));
+        shell.add(buildHeader(), BorderLayout.NORTH);
+        shell.add(buildCenter(), BorderLayout.CENTER);
+        shell.add(buildActions(), BorderLayout.SOUTH);
+        add(shell, BorderLayout.CENTER);
+    }
 
-        lblNome = new JLabel("TAMAGOTCHI", SwingConstants.CENTER);
+    private JPanel buildHeader() {
+        JPanel header = new JPanel(new GridLayout(2, 1, 0, 4)) {
+            @Override protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setColor(Theme.withAlpha(Theme.NEON_PURPLE, 70));
+                g2.drawLine(26, getHeight() - 2, getWidth() - 26, getHeight() - 2);
+                g2.setColor(Theme.withAlpha(Theme.MAGENTA, 34));
+                g2.fillRect(28, 10, getWidth() - 56, getHeight() - 22);
+                g2.dispose();
+            }
+        };
+        header.setOpaque(false);
+        header.setBorder(BorderFactory.createEmptyBorder(8, 8, 10, 8));
+
+        lblNome = new JLabel("[TAMA]", SwingConstants.CENTER) {
+            @Override protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setFont(getFont());
+                g2.setColor(Theme.withAlpha(Theme.NEON_PURPLE, 115));
+                FontMetrics fm = g2.getFontMetrics();
+                int x = (getWidth() - fm.stringWidth(getText())) / 2;
+                int y = (getHeight() - fm.getHeight()) / 2 + fm.getAscent();
+                g2.drawString(getText(), x - 2, y);
+                g2.drawString(getText(), x + 2, y);
+                g2.dispose();
+                super.paintComponent(g);
+            }
+        };
         lblNome.setFont(Theme.FONT_TITLE);
-        lblNome.setForeground(Theme.ACCENT);
+        lblNome.setForeground(Theme.NEON_PURPLE);
         lblNome.setOpaque(false);
 
-        lblTipo = new JLabel("Carregando...", SwingConstants.CENTER);
+        lblTipo = new JLabel("Tipo: --", SwingConstants.CENTER);
         lblTipo.setFont(Theme.FONT_SUBTITLE);
         lblTipo.setForeground(Theme.TEXT_DIM);
         lblTipo.setOpaque(false);
@@ -82,111 +104,116 @@ public class MainFrame extends JFrame {
     }
 
     private JPanel buildCenter() {
-        JPanel center = new JPanel(new BorderLayout(0, 14));
-        center.setBackground(Theme.BG_MAIN);
-        center.setBorder(BorderFactory.createEmptyBorder(20, 26, 12, 26));
-        center.add(buildImageArea(), BorderLayout.CENTER);
-        center.add(buildStats(),     BorderLayout.SOUTH);
+        JPanel center = new JPanel(new GridBagLayout());
+        center.setOpaque(false);
+
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.weightx = 1.0;
+        gbc.fill = GridBagConstraints.BOTH;
+
+        gbc.gridy = 0;
+        gbc.weighty = 0.58;
+        gbc.insets = new Insets(0, 0, 12, 0);
+        center.add(buildImageArea(), gbc);
+
+        gbc.gridy = 1;
+        gbc.weighty = 0.42;
+        gbc.insets = new Insets(0, 0, 0, 0);
+        center.add(buildStats(), gbc);
+
         return center;
     }
 
     private JPanel buildImageArea() {
-        JPanel card = new JPanel(new BorderLayout());
-        card.setBackground(Theme.BG_CARD);
-        card.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(Theme.ACCENT, 2),
-            BorderFactory.createEmptyBorder(10, 10, 10, 10)
-        ));
+        JPanel wrapper = new JPanel(new BorderLayout());
+        wrapper.setOpaque(false);
+        wrapper.setBorder(BorderFactory.createEmptyBorder(4, 16, 4, 16));
 
-        lblImage = new JLabel("Sem imagem", SwingConstants.CENTER);
-        lblImage.setFont(Theme.FONT_LABEL);
-        lblImage.setForeground(Theme.TEXT_DIM);
-        lblImage.setPreferredSize(new Dimension(240, 240));
-        lblImage.setBackground(Theme.BG_CARD);
-        lblImage.setOpaque(true);
-        card.add(lblImage, BorderLayout.CENTER);
-
-        JPanel wrapper = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
-        wrapper.setBackground(Theme.BG_MAIN);
-        wrapper.add(card);
+        petImagePanel = new PetImagePanel();
+        petImagePanel.setPreferredSize(new Dimension(420, 330));
+        petImagePanel.setMinimumSize(new Dimension(300, 240));
+        wrapper.add(petImagePanel, BorderLayout.CENTER);
         return wrapper;
     }
 
     private JPanel buildStats() {
-        JPanel stats = new JPanel(new GridLayout(3, 1, 0, 8));
-        stats.setBackground(Theme.BG_MAIN);
+        JPanel stats = Theme.neonPanel(new GridBagLayout());
+        stats.setBackground(Theme.BG_PANEL);
         stats.setBorder(BorderFactory.createCompoundBorder(
             Theme.sectionBorder("  VITAIS  "),
-            BorderFactory.createEmptyBorder(6, 6, 6, 6)
+            BorderFactory.createEmptyBorder(12, 14, 12, 14)
         ));
 
-        barHunger    = Theme.makeProgressBar(Theme.HUNGER_CLR);
+        barHunger = Theme.makeProgressBar(Theme.HUNGER_CLR);
         barHappiness = Theme.makeProgressBar(Theme.HAPPINESS_CLR);
-        barEnergy    = Theme.makeProgressBar(Theme.ENERGY_CLR);
+        barEnergy = Theme.makeProgressBar(Theme.ENERGY_CLR);
 
-        stats.add(wrapStat("FOME       ", barHunger));
-        stats.add(wrapStat("FELICIDADE ", barHappiness));
-        stats.add(wrapStat("ENERGIA    ", barEnergy));
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.weightx = 1.0;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.insets = new Insets(4, 0, 4, 0);
+
+        gbc.gridy = 0;
+        stats.add(wrapStat("\u2665 FOME", barHunger, Theme.HUNGER_CLR), gbc);
+        gbc.gridy = 1;
+        stats.add(wrapStat("\u25C6 FELICIDADE", barHappiness, Theme.HAPPINESS_CLR), gbc);
+        gbc.gridy = 2;
+        stats.add(wrapStat("\u26A1 ENERGIA", barEnergy, Theme.ENERGY_CLR), gbc);
         return stats;
     }
 
-    private JPanel wrapStat(String label, JProgressBar bar) {
-        JPanel row = new JPanel(new BorderLayout(10, 0));
-        row.setBackground(Theme.BG_MAIN);
-
+    private JPanel wrapStat(String label, JProgressBar bar, Color color) {
+        JPanel row = new JPanel(new BorderLayout(12, 0));
+        row.setOpaque(false);
         JLabel lbl = new JLabel(label);
         lbl.setFont(Theme.FONT_STAT);
-        lbl.setForeground(Theme.TEXT_DIM);
-        lbl.setPreferredSize(new Dimension(122, 30));
-        lbl.setBackground(Theme.BG_MAIN);
-        lbl.setOpaque(true);
-
+        lbl.setForeground(color);
+        lbl.setPreferredSize(new Dimension(150, 30));
         row.add(lbl, BorderLayout.WEST);
         row.add(bar, BorderLayout.CENTER);
         return row;
     }
 
     private JPanel buildActions() {
-        JPanel outer = new JPanel(new BorderLayout(0, 8));
-        outer.setBackground(Theme.BG_MAIN);
-        outer.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createMatteBorder(2, 0, 0, 0, Theme.ACCENT.darker()),
-            BorderFactory.createEmptyBorder(14, 16, 16, 16)
-        ));
+        JPanel outer = new JPanel(new BorderLayout(0, 10));
+        outer.setOpaque(false);
+        outer.setBorder(BorderFactory.createEmptyBorder(14, 8, 0, 8));
 
-        JPanel row1 = new JPanel(new GridLayout(1, 4, 8, 0));
-        row1.setBackground(Theme.BG_MAIN);
+        JPanel grid = new JPanel(new GridLayout(2, 2, 10, 10));
+        grid.setOpaque(false);
 
-        JButton btnAlimentar = Theme.makeButton("ALIMENTAR", Theme.HUNGER_CLR);
-        JButton btnBrincar   = Theme.makeButton("BRINCAR",   Theme.HAPPINESS_CLR);
-        JButton btnDormir    = Theme.makeButton("DORMIR",    Theme.ENERGY_CLR);
-        JButton btnExercitar = Theme.makeButton("EXERCITAR", Theme.ACCENT2);
+        JButton btnAlimentar = Theme.makeButton("\uD83C\uDF56 ALIMENTAR", Theme.HUNGER_CLR);
+        JButton btnBrincar = Theme.makeButton("\uD83C\uDFAE BRINCAR", Theme.HAPPINESS_CLR);
+        JButton btnDormir = Theme.makeButton("\u263E DORMIR", Theme.NEON_PURPLE);
+        JButton btnExercitar = Theme.makeButton("\u25B0 EXERCITAR", Theme.ENERGY_CLR);
+
+        Dimension actionSize = new Dimension(180, 54);
+        btnAlimentar.setPreferredSize(actionSize);
+        btnBrincar.setPreferredSize(actionSize);
+        btnDormir.setPreferredSize(actionSize);
+        btnExercitar.setPreferredSize(actionSize);
 
         btnAlimentar.addActionListener(e -> applyAction("alimentar"));
-        btnBrincar.addActionListener(e   -> applyAction("brincar"));
-        btnDormir.addActionListener(e    -> applyAction("dormir"));
+        btnBrincar.addActionListener(e -> applyAction("brincar"));
+        btnDormir.addActionListener(e -> applyAction("dormir"));
         btnExercitar.addActionListener(e -> applyAction("exercitar"));
 
-        row1.add(btnAlimentar);
-        row1.add(btnBrincar);
-        row1.add(btnDormir);
-        row1.add(btnExercitar);
+        grid.add(btnAlimentar);
+        grid.add(btnBrincar);
+        grid.add(btnDormir);
+        grid.add(btnExercitar);
 
-        JPanel row2 = new JPanel(new BorderLayout());
-        row2.setBackground(Theme.BG_MAIN);
-
-        JButton btnCrud = Theme.makeButton("GERENCIAR PETS", Theme.ACCENT);
+        JButton btnCrud = Theme.makeButton("\uD83D\uDC3E GERENCIAR PETS", Theme.MAGENTA);
+        btnCrud.setPreferredSize(new Dimension(420, 58));
+        btnCrud.setFont(Theme.FONT_BUTTON.deriveFont(Font.BOLD, 15f));
         btnCrud.addActionListener(e -> openCrud());
-        row2.add(btnCrud, BorderLayout.CENTER);
 
-        outer.add(row1, BorderLayout.CENTER);
-        outer.add(row2, BorderLayout.SOUTH);
+        outer.add(grid, BorderLayout.CENTER);
+        outer.add(btnCrud, BorderLayout.SOUTH);
         return outer;
     }
-
-    // -------------------------------------------------------------------------
-    // Controller bridge
-    // -------------------------------------------------------------------------
 
     private void loadPet() {
         try {
@@ -202,16 +229,15 @@ public class MainFrame extends JFrame {
     private void refreshView() {
         Pet p = controller.getPetAtual();
         if (p == null) {
-            lblNome.setText("TAMAGOTCHI");
-            lblTipo.setText("Nenhum pet cadastrado");
+            lblNome.setText("[TAMA]");
+            lblTipo.setText("Tipo: --");
             barHunger.setValue(0);
             barHappiness.setValue(0);
             barEnergy.setValue(0);
-            lblImage.setText("Sem pet");
-            lblImage.setIcon(null);
+            petImagePanel.clear("SEM PET");
             return;
         }
-        lblNome.setText("[ " + p.getNome().toUpperCase() + " ]");
+        lblNome.setText("[TAMA]");
         lblTipo.setText("Tipo: " + (p.getTipoUsuario() != null ? p.getTipoUsuario() : "--"));
         barHunger.setValue(p.getHunger());
         barHappiness.setValue(p.getHappiness());
@@ -221,19 +247,15 @@ public class MainFrame extends JFrame {
 
     private void updateImage(byte[] data) {
         if (data == null || data.length == 0) {
-            lblImage.setIcon(null);
-            lblImage.setText("Sem imagem");
+            petImagePanel.clear("SEM IMAGEM");
             return;
         }
         try {
             BufferedImage bi = ImageIO.read(new ByteArrayInputStream(data));
-            if (bi == null) throw new IOException("Formato de imagem não suportado");
-            Image img = bi.getScaledInstance(240, 240, Image.SCALE_SMOOTH);
-            lblImage.setIcon(new ImageIcon(img));
-            lblImage.setText("");
+            if (bi == null) throw new IOException("Formato de imagem nao suportado");
+            petImagePanel.setImage(bi);
         } catch (IOException ex) {
-            lblImage.setIcon(null);
-            lblImage.setText("Imagem inválida");
+            petImagePanel.clear("IMAGEM INVALIDA");
         }
     }
 
@@ -246,15 +268,15 @@ public class MainFrame extends JFrame {
         }
         try {
             switch (action) {
-                case "alimentar": controller.alimentar();  break;
-                case "brincar":   controller.brincar();    break;
-                case "dormir":    controller.dormir();     break;
-                case "exercitar": controller.exercitar();  break;
+                case "alimentar": controller.alimentar(); break;
+                case "brincar": controller.brincar(); break;
+                case "dormir": controller.dormir(); break;
+                case "exercitar": controller.exercitar(); break;
             }
             refreshView();
         } catch (SQLException e) {
             JOptionPane.showMessageDialog(this,
-                "Erro ao aplicar ação: " + e.getMessage(),
+                "Erro ao aplicar acao: " + e.getMessage(),
                 "Erro", JOptionPane.ERROR_MESSAGE);
         }
     }
@@ -265,14 +287,98 @@ public class MainFrame extends JFrame {
         refreshView();
     }
 
-    // -------------------------------------------------------------------------
-    // Entry point
-    // -------------------------------------------------------------------------
-
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
             Theme.apply();
             new MainFrame().setVisible(true);
         });
+    }
+
+    private static class PetImagePanel extends JPanel {
+        private BufferedImage image;
+        private String emptyText = "SEM IMAGEM";
+
+        PetImagePanel() {
+            setBackground(Theme.BG_CARD);
+            setBorder(Theme.pixelBorder(Theme.NEON_PURPLE, Theme.MAGENTA, 3));
+        }
+
+        void setImage(BufferedImage image) {
+            this.image = image;
+            repaint();
+        }
+
+        void clear(String text) {
+            this.image = null;
+            this.emptyText = text;
+            repaint();
+        }
+
+        @Override protected void paintComponent(Graphics g) {
+            super.paintComponent(g);
+            Graphics2D g2 = (Graphics2D) g.create();
+            int w = getWidth();
+            int h = getHeight();
+
+            g2.setColor(Theme.withAlpha(Theme.NEON_PURPLE, 34));
+            g2.fillRect(14, 14, Math.max(0, w - 28), Math.max(0, h - 28));
+            g2.setColor(Theme.withAlpha(Theme.MAGENTA, 28));
+            for (int y = 20; y < h - 20; y += 10) {
+                g2.drawLine(20, y, w - 20, y);
+            }
+
+            if (image != null) {
+                double scale = Math.min((w - 58) / (double) image.getWidth(), (h - 58) / (double) image.getHeight());
+                int iw = Math.max(1, (int) Math.round(image.getWidth() * scale));
+                int ih = Math.max(1, (int) Math.round(image.getHeight() * scale));
+                int x = (w - iw) / 2;
+                int y = (h - ih) / 2;
+                g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
+                g2.drawImage(image, x, y, iw, ih, null);
+            } else {
+                paintPlaceholder(g2, w, h);
+            }
+
+            paintCorners(g2, w, h);
+            g2.dispose();
+        }
+
+        private void paintPlaceholder(Graphics2D g2, int w, int h) {
+            int cx = w / 2;
+            int cy = h / 2 - 16;
+            g2.setColor(Theme.withAlpha(Theme.TEXT_DIM, 85));
+            g2.fillRect(cx - 34, cy - 22, 68, 44);
+            g2.setColor(Theme.BG_CARD);
+            g2.fillRect(cx - 24, cy - 12, 48, 24);
+            g2.setColor(Theme.MAGENTA);
+            g2.drawRect(cx - 36, cy - 24, 72, 48);
+            g2.setColor(Theme.NEON_PURPLE);
+            g2.fillRect(cx - 7, cy - 6, 6, 6);
+            g2.fillRect(cx + 7, cy - 6, 6, 6);
+            g2.fillRect(cx - 12, cy + 10, 24, 4);
+
+            g2.setFont(Theme.FONT_HEADER.deriveFont(Font.BOLD, 18f));
+            FontMetrics fm = g2.getFontMetrics();
+            int tx = (w - fm.stringWidth(emptyText)) / 2;
+            int ty = cy + 62;
+            g2.setColor(Theme.withAlpha(Theme.NEON_PURPLE, 100));
+            g2.drawString(emptyText, tx - 1, ty);
+            g2.drawString(emptyText, tx + 1, ty);
+            g2.setColor(Theme.TEXT);
+            g2.drawString(emptyText, tx, ty);
+        }
+
+        private void paintCorners(Graphics2D g2, int w, int h) {
+            int s = 28;
+            g2.setColor(Theme.NEON_PURPLE);
+            g2.fillRect(18, 18, s, 3);
+            g2.fillRect(18, 18, 3, s);
+            g2.fillRect(w - 18 - s, 18, s, 3);
+            g2.fillRect(w - 21, 18, 3, s);
+            g2.fillRect(18, h - 21, s, 3);
+            g2.fillRect(18, h - 18 - s, 3, s);
+            g2.fillRect(w - 18 - s, h - 21, s, 3);
+            g2.fillRect(w - 21, h - 18 - s, 3, s);
+        }
     }
 }

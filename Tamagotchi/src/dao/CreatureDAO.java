@@ -32,6 +32,19 @@ public class CreatureDAO {
         return null;
     }
 
+    public String getNomeCanonical(String nome) throws SQLException {
+        if (nome == null || nome.isBlank()) return null;
+        String sql = "SELECT nome FROM creature_type WHERE LOWER(nome) = LOWER(TRIM(?)) LIMIT 1";
+        try (Connection conn = ConnectionFactory.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, nome);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) return rs.getString("nome");
+            }
+        }
+        return null;
+    }
+
     public List<CreatureType> listAll() throws SQLException {
         String sql = "SELECT id, nome, estagio FROM creature_type ORDER BY id";
         List<CreatureType> list = new ArrayList<>();
@@ -63,7 +76,8 @@ public class CreatureDAO {
         String sql = "SELECT e.id, e.from_creature, e.to_creature, e.min_happiness, e.max_hunger "
                    + "FROM evolution e "
                    + "JOIN creature_type c ON c.id = e.from_creature "
-                   + "WHERE c.nome = ?";
+                   + "WHERE LOWER(c.nome) = LOWER(TRIM(?)) "
+                   + "ORDER BY e.min_happiness DESC, e.max_hunger ASC, e.id ASC";
         List<EvolutionRule> list = new ArrayList<>();
         try (Connection conn = ConnectionFactory.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {

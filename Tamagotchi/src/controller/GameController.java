@@ -15,11 +15,14 @@ public class GameController {
     private Pet petAtual;
 
     public void carregarPet() throws SQLException {
-        petAtual = petDAO.getFirstPet();
+        petAtual = petDAO.getActivePet();
     }
 
     public void carregarPetPorId(int id) throws SQLException {
         petAtual = petDAO.buscarPorId(id);
+        if (petAtual != null) {
+            petDAO.setActivePet(id);
+        }
     }
 
     public Pet getPetAtual() {

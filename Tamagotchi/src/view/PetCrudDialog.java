@@ -27,10 +27,10 @@ public class PetCrudDialog extends JDialog {
     private DefaultTableModel tableModel;
 
     public PetCrudDialog(Frame owner, GameController controller) {
-        super(owner, "Gerenciar Pets", true);
+        super(owner, "Arquivo de Pets", true);
         this.controller = controller;
-        setMinimumSize(new Dimension(720, 480));
-        setSize(760, 540);
+        setMinimumSize(new Dimension(720, 520));
+        setSize(780, 580);
         setResizable(true);
         setLocationRelativeTo(owner);
         getContentPane().setBackground(Theme.BG_MAIN);
@@ -53,28 +53,29 @@ public class PetCrudDialog extends JDialog {
         JPanel header = new JPanel(new BorderLayout()) {
             @Override
             protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
                 Graphics2D g2 = (Graphics2D) g.create();
-                GradientPaint gp = new GradientPaint(
-                    0, 0,           new Color(58, 38, 108),
-                    0, getHeight(), new Color(18, 12, 42)
-                );
-                g2.setPaint(gp);
+                g2.setColor(Theme.BG_PANEL);
                 g2.fillRect(0, 0, getWidth(), getHeight());
+                g2.setColor(Theme.withAlpha(Theme.NEON_PURPLE, 50));
+                g2.drawLine(18, getHeight() - 3, getWidth() - 18, getHeight() - 3);
+                g2.setColor(Theme.withAlpha(Theme.MAGENTA, 35));
+                g2.fillRect(20, 10, getWidth() - 40, getHeight() - 20);
                 g2.dispose();
             }
         };
-        header.setOpaque(true);
+        header.setOpaque(false);
         header.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createMatteBorder(0, 0, 2, 0, Theme.ACCENT),
+            Theme.pixelBorder(Theme.NEON_PURPLE, Theme.PURPLE, 2),
             BorderFactory.createEmptyBorder(14, 20, 14, 20)
         ));
 
-        JLabel title = new JLabel("GERENCIAR PETS", SwingConstants.LEFT);
-        title.setFont(Theme.FONT_HEADER);
-        title.setForeground(Theme.ACCENT);
+        JLabel title = new JLabel("ARQUIVO DE PETS", SwingConstants.LEFT);
+        title.setFont(Theme.FONT_TITLE.deriveFont(Font.BOLD, 24f));
+        title.setForeground(Theme.NEON_PURPLE);
         title.setOpaque(false);
 
-        JLabel hint = new JLabel("Selecione um pet para editar, excluir ou usar.", SwingConstants.RIGHT);
+        JLabel hint = new JLabel("Escolha seu companheiro", SwingConstants.RIGHT);
         hint.setFont(Theme.FONT_SUBTITLE);
         hint.setForeground(Theme.TEXT_DIM);
         hint.setOpaque(false);
@@ -93,8 +94,9 @@ public class PetCrudDialog extends JDialog {
         table.setBackground(Theme.TABLE_ODD);
         table.setForeground(Theme.TEXT);
         table.setFont(Theme.FONT_TABLE);
-        table.setRowHeight(30);
+        table.setRowHeight(34);
         table.setShowVerticalLines(false);
+        table.setShowHorizontalLines(false);
         table.setGridColor(Theme.BORDER_LO);
         table.setSelectionBackground(Theme.TABLE_SEL);
         table.setSelectionForeground(Theme.TEXT);
@@ -107,40 +109,46 @@ public class PetCrudDialog extends JDialog {
 
         JTableHeader tableHeader = table.getTableHeader();
         tableHeader.setBackground(Theme.TABLE_HEADER);
-        tableHeader.setForeground(Theme.ACCENT2);
+        tableHeader.setForeground(Theme.YELLOW);
         tableHeader.setFont(Theme.FONT_HEADER);
-        tableHeader.setBorder(BorderFactory.createMatteBorder(0, 0, 2, 0, Theme.ACCENT2));
+        tableHeader.setBorder(Theme.pixelBorder(Theme.NEON_PURPLE, Theme.PURPLE, 1));
         tableHeader.setReorderingAllowed(false);
 
         JScrollPane scroll = new JScrollPane(table);
         scroll.getViewport().setBackground(Theme.TABLE_ODD);
-        scroll.setBorder(BorderFactory.createEmptyBorder());
+        scroll.setBorder(BorderFactory.createCompoundBorder(
+            Theme.pixelBorder(Theme.NEON_PURPLE, Theme.PURPLE, 2),
+            BorderFactory.createEmptyBorder(8, 8, 8, 8)
+        ));
         scroll.setBackground(Theme.BG_MAIN);
         return scroll;
     }
 
     private JPanel buildButtons() {
-        JPanel panel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
+        JPanel panel = new JPanel(new BorderLayout(0, 8));
         panel.setBackground(Theme.BG_MAIN);
         panel.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createMatteBorder(2, 0, 0, 0, Theme.ACCENT.darker()),
+            Theme.pixelBorder(Theme.PURPLE, Theme.BORDER_LO, 1),
             BorderFactory.createEmptyBorder(12, 16, 14, 16)
         ));
 
-        JButton btnNovo    = Theme.makeButton("NOVO",      Theme.ACCENT);
-        JButton btnEditar  = Theme.makeButton("EDITAR",    Theme.ACCENT2);
-        JButton btnExcluir = Theme.makeButton("EXCLUIR",   Theme.HUNGER_CLR);
-        JButton btnUsar    = Theme.makeButton("USAR ESTE", Theme.ENERGY_CLR);
+        JButton btnNovo    = Theme.makeButton("+ NOVO",       Theme.NEON_PURPLE);
+        JButton btnEditar  = Theme.makeButton("* EDITAR",     Theme.YELLOW);
+        JButton btnExcluir = Theme.makeButton("X EXCLUIR",    Theme.HUNGER_CLR);
+        JButton btnUsar    = Theme.makeButton("\uD83D\uDC3E USAR ESTE PET", Theme.MAGENTA);
 
         btnNovo.addActionListener(e    -> novoPet());
         btnEditar.addActionListener(e  -> editarPet());
         btnExcluir.addActionListener(e -> excluirPet());
         btnUsar.addActionListener(e    -> usarPet());
 
-        panel.add(btnNovo);
-        panel.add(btnEditar);
-        panel.add(btnExcluir);
-        panel.add(btnUsar);
+        JPanel top = new JPanel(new GridLayout(1, 3, 8, 0));
+        top.setOpaque(false);
+        top.add(btnNovo);
+        top.add(btnEditar);
+        top.add(btnExcluir);
+        panel.add(top, BorderLayout.CENTER);
+        panel.add(btnUsar, BorderLayout.SOUTH);
         return panel;
     }
 
@@ -159,6 +167,9 @@ public class PetCrudDialog extends JDialog {
             if (isSelected) {
                 setBackground(Theme.TABLE_SEL);
                 setForeground(Theme.TEXT);
+                setBorder(BorderFactory.createCompoundBorder(
+                    BorderFactory.createMatteBorder(1, 3, 1, 3, Theme.MAGENTA),
+                    BorderFactory.createEmptyBorder(0, 10, 0, 10)));
             } else {
                 setBackground(row % 2 == 0 ? Theme.TABLE_ODD : Theme.TABLE_EVEN);
                 setForeground(col == 0 ? Theme.TEXT_DIM : Theme.TEXT);
@@ -294,24 +305,23 @@ public class PetCrudDialog extends JDialog {
         private JPanel buildFormHeader() {
             JPanel header = new JPanel(new BorderLayout()) {
                 @Override protected void paintComponent(Graphics g) {
+                    super.paintComponent(g);
                     Graphics2D g2 = (Graphics2D) g.create();
-                    GradientPaint gp = new GradientPaint(
-                        0, 0,           new Color(52, 32, 92),
-                        0, getHeight(), new Color(18, 12, 42)
-                    );
-                    g2.setPaint(gp);
+                    g2.setColor(Theme.BG_PANEL);
                     g2.fillRect(0, 0, getWidth(), getHeight());
+                    g2.setColor(Theme.withAlpha(Theme.MAGENTA, 42));
+                    g2.fillRect(18, 8, getWidth() - 36, getHeight() - 16);
                     g2.dispose();
                 }
             };
-            header.setOpaque(true);
+            header.setOpaque(false);
             header.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createMatteBorder(0, 0, 2, 0, Theme.ACCENT),
+                Theme.pixelBorder(Theme.NEON_PURPLE, Theme.PURPLE, 2),
                 BorderFactory.createEmptyBorder(12, 18, 12, 18)
             ));
             JLabel title = new JLabel(pet == null ? "NOVO PET" : "EDITAR PET", SwingConstants.LEFT);
             title.setFont(Theme.FONT_HEADER);
-            title.setForeground(Theme.ACCENT);
+            title.setForeground(Theme.NEON_PURPLE);
             title.setOpaque(false);
             header.add(title, BorderLayout.WEST);
             return header;
@@ -325,7 +335,9 @@ public class PetCrudDialog extends JDialog {
             // ── Campos ──────────────────────────────────────────────────────
             JPanel form = new JPanel(new GridLayout(0, 2, 8, 10));
             form.setBackground(Theme.BG_MAIN);
-            form.setBorder(Theme.sectionBorder("  DADOS DO PET  "));
+            form.setBorder(BorderFactory.createCompoundBorder(
+                Theme.sectionBorder("  DADOS DO PET  "),
+                BorderFactory.createEmptyBorder(10, 10, 10, 10)));
 
             txtNome     = new JTextField();
             txtTipo     = new JTextField();
@@ -345,10 +357,10 @@ public class PetCrudDialog extends JDialog {
             lblImageName.setBackground(Theme.BG_INPUT);
             lblImageName.setOpaque(true);
             lblImageName.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(Theme.BORDER_LO, 1),
+                Theme.pixelBorder(Theme.NEON_PURPLE, Theme.PURPLE, 1),
                 BorderFactory.createEmptyBorder(5, 8, 5, 8)));
 
-            JButton btnChooseImage = Theme.makeButton("Escolher...", Theme.ACCENT2);
+            JButton btnChooseImage = Theme.makeButton("+ IMAGEM", Theme.NEON_PURPLE);
             btnChooseImage.addActionListener(e -> chooseImage());
 
             form.add(makeFormLabel("Nome:"));        form.add(txtNome);
@@ -368,7 +380,7 @@ public class PetCrudDialog extends JDialog {
             lblImagePreview.setBackground(Theme.BG_CARD);
             lblImagePreview.setOpaque(true);
             lblImagePreview.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(Theme.ACCENT, 1),
+                Theme.pixelBorder(Theme.MAGENTA, Theme.PURPLE, 2),
                 BorderFactory.createEmptyBorder(4, 4, 4, 4)));
 
             JPanel previewPanel = new JPanel(new BorderLayout());
